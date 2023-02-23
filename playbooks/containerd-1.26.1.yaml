@@ -238,7 +238,7 @@
     when: not kubeadm_initialized_status.stat.exists
   - name: Writing CNI manifest
     tags: bootstrap-cluster
-    file:
+    copy:
       src: ../manifests/cni/calico-v3.25.yaml
       dest: /root/calico.yaml
   - name: Apply CNI
