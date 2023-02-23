@@ -384,12 +384,6 @@
       kubectl apply --force -f /root/kube-proxy.yaml
       kubectl rollout restart ds kube-proxy -n kube-system
       kubectl rollout status ds kube-proxy -n kube-system
-- hosts: masters
-  tasks:
-  - name: Restarting API server
-    tags: configure-apiserver
-    shell: |
-      crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
   - name: Cleaning manifest
     tags: configure-apiserver
     file:
@@ -401,3 +395,9 @@
       - /root/kubeadm-config.yaml
       - /root/kubeadm.yaml
       - /root/calico.yaml
+- hosts: masters
+  tasks:
+  - name: Restarting API server
+    tags: configure-apiserver
+    shell: |
+      crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
