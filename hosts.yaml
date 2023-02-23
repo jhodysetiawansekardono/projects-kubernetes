@@ -1,0 +1,23 @@
+masters:
+  hosts:
+    master001:
+      ansible_host: MASTER001
+      ansible_user: root
+    master002:
+      ansible_host: MASTER002
+      ansible_user: root
+    master003:
+      ansible_host: MASTER003
+      ansible_user: root
+
+workers:
+  hosts:
+    worker001:
+      ansible_host: WORKER001
+      ansible_user: root
+    worker002:
+      ansible_host: WORKER002
+      ansible_user: root
+    worker003:
+      ansible_host: WORKER003
+      ansible_user: root
