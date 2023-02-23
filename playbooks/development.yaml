@@ -1,0 +1,414 @@
+---
+- hosts: all
+  vars_files:
+  - variables.yaml
+  tasks:
+  - name: Update hosts file
+    tags: install-depedencies
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        {% for host in groups['all'] %}
+        {{ hostvars[host].ansible_host }} {{ hostvars[host].ansible_hostname }} {{ host }}
+        {% endfor %}
+      mode: 0644
+  - name: Update Ubuntu packages
+    apt:
+      upgrade: dist
+      force_apt_get: yes
+      autoremove: yes
+      install_recommends: yes
+      dpkg_options: 'force-confdef,force-confold'
+  - name: Install depedency
+    tags: install-depedencies
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: present
+    vars:
+      packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - nfs-common
+      - glusterfs-client
+      - tree
+      - jq
+      - sysstat
+      - iperf
+      - arping
+      - ca-certificates
+
+
+- hosts: masters,workers
+  vars_files:
+  - variables.yaml
+  tasks:
+  - name: Load required containerd modules
+    tags: install-containerd
+    copy:
+      dest: /etc/modules-load.d/containerd.conf
+      content: |
+        overlay
+        br_netfilter
+    register: load_containerd_modules
+  - name: Load required sysctl parameters
+    tags: install-containerd
+    copy:
+      dest: /etc/sysctl.d/99-kubernetes-cri.conf
+      content: |
+        net.bridge.bridge-nf-call-iptables  = 1
+        net.bridge.bridge-nf-call-ip6tables = 1
+        net.ipv4.ip_forward                 = 1
+    register: load_sysctl_parameters
+  - name: Apply modules and parameters
+    tags: install-containerd
+    shell: |
+      modprobe overlay
+      modprobe br_netfilter
+      sysctl --system
+    when: load_containerd_modules.changed or load_sysctl_parameters.changed
+  - name: Remove uncompatible Containerd
+    tags: install-containerd
+    apt:
+      name: containerd
+      state: absent
+  - name: Download Containerd
+    tags: install-containerd
+    get_url:
+      url: https://github.com/containerd/containerd/releases/download/v1.6.18/containerd-1.6.18-linux-amd64.tar.gz
+      dest: /root/
+    register: download_containerd_result
+    delay: 10
+    until: download_containerd_result is succeeded or download_containerd_result.attempts == 2
+    failed_when: download_containerd_result is failed and download_containerd_result.attempts == 2
+  - name: Extract Containerd
+    tags: install-containerd
+    unarchive:
+      src: /root/containerd-1.6.18-linux-amd64.tar.gz
+      dest: /root
+      remote_src: yes
+  - name: Copy Containerd binary
+    tags: install-containerd
+    copy:
+      src: /root/bin/{{ item }}
+      dest: /usr/local/bin
+      mode: 0755
+      remote_src: yes
+    with_items:
+      - containerd
+      - containerd-shim
+      - containerd-shim-runc-v1
+      - containerd-shim-runc-v2
+      - containerd-stress
+      - ctr
+  - name: Cleanup downloaded file
+    tags: install-containerd
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /root/bin
+  - name: Download runc
+    tags: install-containerd
+    get_url:
+      url: https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
+      dest: /root
+    register: download_runc_result
+    delay: 10
+    until: download_runc_result is succeeded or download_runc_result.attempts == 2
+    failed_when: download_runc_result is failed and download_runc_result.attempts == 2
+  - name: Install runc
+    tags: install-containerd
+    shell: |
+      install -m 755 /root/runc.amd64 /usr/local/sbin/runc
+      rm /root/runc.amd64
+  - name: Download CNI plugin
+    tags: install-containerd
+    get_url:
+      url: https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+      dest: /root
+    register: download_cni_result
+    delay: 10
+    until: download_cni_result is succeeded or download_cni_result.attempts == 2
+    failed_when: download_cni_result is failed and download_cni_result.attempts == 2
+  - name: Create CNI plugin directory
+    tags: install-containerd
+    file:
+      path: /opt/cni/bin
+      state: directory
+  - name: Extract CNI plugin
+    tags: install-containerd
+    unarchive:
+      src: /root/cni-plugins-linux-amd64-v1.2.0.tgz
+      dest: /opt/cni/bin
+      remote_src: yes
+  - name: Create Containerd directories
+    tags: install-containerd
+    file:
+      path: /etc/containerd
+      state: directory
+  - name: Configuring Containerd
+    tags: install-containerd
+    shell: |
+      containerd config default | tee /etc/containerd/config.toml
+      sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+  - name: Writing systemd for Containerd
+    tags: install-containerd
+    copy:
+      src: ../templates/containerd.service
+      dest: /etc/systemd/system/containerd.service
+      mode: 0644
+  - name: Restarting Containerd service
+    tags: install-containerd
+    systemd:
+      name: containerd
+      daemon_reload: true
+      masked: false
+      enabled: true
+      state: started
+
+
+  - name: Remove swapfile from /etc/fstab
+    tags: install-kubernetes
+    mount:
+      name: "{{ item }}"
+      fstype: swap
+      state: absent
+    with_items:
+      - swap
+      - none
+  - name: Disable swap
+    tags: install-kubernetes
+    command: swapoff -a
+    when: ansible_swaptotal_mb > 0
+  - name: Add kubernetes apt signing key
+    tags: install-kubernetes
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+  - name: Add kubernetes apt repository
+    tags: install-kubernetes
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+      filename: kubernetes.list
+  - name: Install kubernetes packages
+    tags: install-kubernetes
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+        - kubelet=1.26.1-00
+        - kubeadm=1.26.1-00
+        - kubectl=1.26.1-00
+  - name: Disable auto update of kubernetes packages
+    tags: install-kubernetes
+    dpkg_selections:
+      name: "{{ item }}"
+      selection: hold
+    loop:
+      - kubelet
+      - kubeadm
+      - kubectl
+
+
+- hosts: loadbalancer
+  vars_files:
+  - variables.yaml
+  tasks:
+  - name: Install loadbalancer packages
+    tags: install-loadbalancer
+    apt:
+      name: haproxy
+      update_cache: yes
+      state: present
+  - name: Disable auto updates for loadbalancer packages
+    tags: install-loadbalancer
+    dpkg_selections:
+      name: haproxy
+      selection: hold
+  - name: Writing loadbalancer configuration
+    tags: install-loadbalancer
+    template:
+      src: ../templates/haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+    register: configuring_loadbalancer
+  - name: Apply loadbalancer configuration
+    tags: install-loadbalancer
+    systemd:
+      name: haproxy
+      state: restarted
+    when: configuring_loadbalancer.changed
+
+
+- hosts: master001
+  vars_files:
+  - variables.yaml
+  tasks:
+  - name: Creating kubeadm config file
+    tags: bootstrap-cluster
+    template:
+      src: ../manifests/kubeadm/kubernetes-1.26.1.yaml.j2
+      dest: /root/kubeadm-config.yaml
+  - name: Initialize the first control plane
+    tags: bootstrap-cluster
+    shell: kubeadm init --config /root/kubeadm-config.yaml
+  - name: Apply CNI calico
+    tags: bootstrap-cluster
+    shell: |
+      mkdir -p /root/.kube
+      cp -i /etc/kubernetes/admin.conf /root/.kube/config
+      chown $(id -u):$(id -g) /root/.kube/config
+      kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml
+
+  - name: Generate join command for control-plane
+    tags: generate-control-plane-token
+    shell: echo "$(kubeadm token create --print-join-command) --control-plane --certificate-key $(kubeadm init phase upload-certs --upload-certs | grep -vw -e certificate -e Namespace)"
+    register: join_command_controller
+  - name: Copy join command for control-plane to local file
+    tags: generate-control-plane-token
+    local_action: copy content="{{ join_command_controller.stdout_lines[0] }}" dest="./join-command-controller"
+  - name: Generate join command for workers
+    tags: generate-worker-token
+    command: kubeadm token create --print-join-command
+    register: join_command_workers
+  - name: Copy join command for workers to local file
+    tags: generate-worker-token
+    local_action: copy content="{{ join_command_workers.stdout_lines[0] }}" dest="./join-command-workers"
+
+
+- hosts: master002
+  tasks:
+  - name: Copy the join command to control plane
+    tags: join-masters
+    copy:
+      mode: 0777
+      src: join-command-controller
+      dest: /tmp/join-command.sh
+  - name: Join the control plane node to cluster
+    tags: join-masters
+    command: sh /tmp/join-command.sh
+  - name: Copy kubeconfig
+    tags: join-masters
+    shell: |
+      mkdir -p /root/.kube
+      cp -i /etc/kubernetes/admin.conf /root/.kube/config
+      chown $(id -u):$(id -g) /root/.kube/config
+- hosts: master003
+  tasks:
+  - name: Copy the join command to control plane
+    tags: join-masters
+    copy:
+      mode: 0777
+      src: join-command-controller
+      dest: /tmp/join-command.sh
+  - name: Join the control plane node to cluster
+    tags: join-masters
+    command: sh /tmp/join-command.sh
+  - name: Copy kubeconfig
+    tags: join-masters
+    shell: |
+      mkdir -p /root/.kube
+      cp -i /etc/kubernetes/admin.conf /root/.kube/config
+      chown $(id -u):$(id -g) /root/.kube/config
+
+
+- hosts: workers
+  tasks:
+  - name: Copy the join command to workers
+    tags: join-workers
+    copy:
+      mode: 0777
+      src: join-command-workers
+      dest: /tmp/join-command.sh
+  - name: Join the workers node to cluster
+    tags: join-workers
+    command: sh /tmp/join-command.sh
+- hosts: localhost
+  connection: local
+  tasks:
+  - name: Removing join command
+    tags: join-workers
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - join-command-controller
+      - join-command-workers
+- hosts: master001
+  tasks:
+  - name: Labeling worker nodes
+    tags: join-workers
+    shell: for hosts in $(kubectl get nodes | grep worker | awk '{print$1}'); do kubectl label nodes $hosts type=app; kubectl label nodes $hosts node-role.kubernetes.io/worker=; done
+
+- hosts: workers
+  vars_files:
+  - variables.yaml
+  tasks:
+  - name: Writing loadbalancer static POD manifest
+    tags: configure-apiserver
+    copy:
+      src: ../manifests/loadbalancer/nginx.yaml
+      dest: /etc/kubernetes/manifests
+      mode: 0600
+  - name: Create loadbalancer directories
+    tags: configure-apiserver
+    file:
+      path: /etc/nginx
+      state: directory
+  - name: Writing loadbalancer configuration
+    tags: configure-apiserver
+    template:
+      src: ../templates/nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+- hosts: masters,workers
+  tasks:
+  - name: Configure Kubeadm to use localhost loadbalancer
+    tags: configure-apiserver
+    shell: |
+      sed -i 's/server: https:\/\/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+:6443/server: https:\/\/localhost:6443/g' /etc/kubernetes/kubelet.conf
+    register: configuring_apiserver
+  - name: Apply Kubeadm changes
+    tags: configure-apiserver
+    systemd:
+      name: kubelet
+      state: restarted
+    when: configuring_apiserver.changed
+- hosts: master001
+  tasks:
+  - name: Configure static POD to use localhost apiserver
+    tags: configure-apiserver
+    shell: |
+      kubectl -n kube-system get configmap kubeadm-config -o jsonpath='{.data.ClusterConfiguration}' > /root/kubeadm.yaml
+      sed -i 's/controlPlaneEndpoint: [0-9.]\+:/controlPlaneEndpoint: localhost:/g' /root/kubeadm.yaml
+      kubeadm init phase upload-config kubeadm --config kubeadm.yaml
+      kubectl -n kube-system get cm kube-proxy -o yaml > /root/kube-proxy.yaml
+      kubectl -n kube-public get cm cluster-info -o yaml > /root/cluster-info.yaml
+      sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /root/kube-proxy.yaml /root/cluster-info.yaml /root/.kube/config /etc/kubernetes/admin.conf
+      kubectl apply --force -f /root/cluster-info.yaml
+      kubectl apply --force -f /root/kube-proxy.yaml
+      kubectl rollout restart ds kube-proxy -n kube-system
+      kubectl rollout status ds kube-proxy -n kube-system
+- hosts: masters
+  tasks:
+  - name: Writing script for restarting API server
+    tags: configure-apiserver
+    copy:
+      dest: /root/restart-api.sh
+      content: |
+        #!/bin/bash
+        pods=$(kubectl -n kube-system get pods | grep apiserver-$(hostname) | awk '{print$1}')
+        apiserverid=$(kubectl -n kube-system get pods $pods -o jsonpath='{.status.containerStatuses[0].containerID}' | perl -lape 's/.*\/(.*)/$1/gm')
+        ctr -n k8s.io task kill -s SIGKILL $apiserverid
+        ctr -n k8s.io container rm $apiserverid
+      mode: 0755
+  - name: Restarting API server
+    tags: configure-apiserver
+    shell: |
+      bash /root/restart-api.sh
+      rm /root/restart-api.sh
