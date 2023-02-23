@@ -15,6 +15,7 @@
   - name: Update Ubuntu packages
     tags: install-depedencies
     apt:
+      update_cache: yes
       upgrade: dist
       force_apt_get: yes
       autoremove: yes
