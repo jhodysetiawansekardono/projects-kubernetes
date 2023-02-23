@@ -359,3 +359,13 @@
     shell: |
       bash /root/restart-api.sh
       rm /root/restart-api.sh
+  - name: Cleaning manifest
+    tags: configure-apiserver
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /root/cluster-info.yaml
+      - /root/kube-proxy.yaml
+      - /root/kubeadm-config.yaml
+      - /root/kubeadm.yaml
