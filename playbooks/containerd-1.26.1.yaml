@@ -13,6 +13,7 @@
         {% endfor %}
       mode: 0644
   - name: Update Ubuntu packages
+    tags: install-depedencies
     apt:
       upgrade: dist
       force_apt_get: yes
