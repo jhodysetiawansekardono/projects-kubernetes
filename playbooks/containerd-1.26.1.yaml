@@ -225,9 +225,15 @@
     template:
       src: ../manifests/kubeadm/kubernetes-1.26.1.yaml.j2
       dest: /root/kubeadm-config.yaml
+  - name: Check if kubeadm has been initialized
+    tags: bootstrap-cluster
+    stat:
+      path: /etc/kubernetes/kubelet.conf
+    register: kubeadm_initialized_status
   - name: Initialize the first control plane
     tags: bootstrap-cluster
     shell: kubeadm init --config /root/kubeadm-config.yaml
+    when: not kubeadm_initialized_status.stat.exists
   - name: Apply CNI calico
     tags: bootstrap-cluster
     shell: |
