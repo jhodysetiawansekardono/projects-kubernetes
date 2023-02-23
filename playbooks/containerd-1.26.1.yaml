@@ -111,7 +111,7 @@
       state: directory
   - name: Writing Containerd configuration
     tags: install-containerd
-    file:
+    copy:
       src: ../templates/containerd-config.toml
       dest: /etc/containerd/config.toml
     register: containerd_configuration
