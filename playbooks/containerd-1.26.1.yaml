@@ -186,7 +186,7 @@
       - containerd.io
 
 
-- hosts: loadbalancer
+- hosts: loadbalancers
   vars_files:
   - variables.yaml
   tasks:
@@ -317,6 +317,7 @@
     tags: join-workers
     shell: for hosts in $(kubectl get nodes | grep worker | awk '{print$1}'); do kubectl label nodes $hosts type=app; kubectl label nodes $hosts node-role.kubernetes.io/worker=; done
 
+
 - hosts: workers
   vars_files:
   - variables.yaml
@@ -367,23 +368,10 @@
       kubectl rollout status ds kube-proxy -n kube-system
 - hosts: masters
   tasks:
-  - name: Writing script for restarting API server
-    tags: configure-apiserver
-    copy:
-      dest: /root/restart-api.sh
-      content: |
-        #!/bin/bash
-        sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /root/.kube/config /etc/kubernetes/admin.conf
-        pods=$(kubectl -n kube-system get pods | grep apiserver-$(hostname) | awk '{print$1}')
-        apiserverid=$(kubectl -n kube-system get pods $pods -o jsonpath='{.status.containerStatuses[0].containerID}' | perl -lape 's/.*\/(.*)/$1/gm')
-        ctr -n k8s.io task kill -s SIGKILL $apiserverid
-        ctr -n k8s.io container rm $apiserverid
-      mode: 0755
   - name: Restarting API server
     tags: configure-apiserver
     shell: |
-      bash /root/restart-api.sh
-      rm /root/restart-api.sh
+      crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
   - name: Cleaning manifest
     tags: configure-apiserver
     file:
