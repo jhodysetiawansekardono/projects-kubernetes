@@ -329,6 +329,11 @@
   - name: Labeling worker nodes
     tags: join-workers
     shell: for hosts in $(kubectl get nodes | grep worker | awk '{print$1}'); do kubectl label nodes $hosts type=app; kubectl label nodes $hosts node-role.kubernetes.io/worker=; done
+  - name: Waiting cluster ready
+    tags: join-workers
+    pause:
+      echo: yes
+      minutes: 10
 
 
 - hosts: workers
