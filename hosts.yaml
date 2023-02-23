@@ -1,0 +1,41 @@
+masters:
+  hosts:
+    master001:
+      ansible_host: 172.19.40.9
+      ansible_user: root
+    master002:
+      ansible_host: 172.19.40.10
+      ansible_user: root
+    master003:
+      ansible_host: 172.19.40.13
+      ansible_user: root
+
+workers:
+  hosts:
+    worker001:
+      ansible_host: 172.19.40.14
+      ansible_user: root
+    worker002:
+      ansible_host: 172.19.40.15
+      ansible_user: root
+    worker003:
+      ansible_host: 172.19.40.36
+      ansible_user: root
+    worker004:
+      ansible_host: 172.19.40.37
+      ansible_user: root
+    worker005:
+      ansible_host: 172.19.40.38
+      ansible_user: root
+
+storage:
+  hosts:
+    storage-nfs:
+      ansible_host: 172.19.40.106
+      ansible_user: root
+
+loadbalancer:
+  hosts:
+    loadbalancer001:
+      ansible_host: 172.19.40.107
+      ansible_user: root
