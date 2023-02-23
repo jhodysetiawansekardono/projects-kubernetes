@@ -114,6 +114,18 @@
     shell: |
       containerd config default | tee /etc/containerd/config.toml
       sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+  - name: Create proxy directory for Containerd
+    tags: install-containerd
+    file:
+      path: /etc/systemd/system/containerd.service.d
+      state: directory
+      mode: 0755
+  - name: Writing proxy config for Containerd
+    tags: install-containerd
+    template:
+      src: ../templates/http-proxy.conf.j2
+      dest: /etc/systemd/system/containerd.service.d/http-proxy.conf
+      mode: 0644
   - name: Restarting Containerd service
     tags: install-containerd
     systemd:
