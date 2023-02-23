@@ -109,11 +109,12 @@
     file:
       path: /etc/containerd
       state: directory
-  - name: Configuring Containerd
+  - name: Writing Containerd configuration
     tags: install-containerd
-    shell: |
-      containerd config default | tee /etc/containerd/config.toml
-      sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+    file:
+      src: ../templates/containerd-config.toml
+      dest: /etc/containerd/config.toml
+    register: containerd_configuration
   - name: Create proxy directory for Containerd
     tags: install-containerd
     file:
@@ -134,6 +135,7 @@
       masked: false
       enabled: true
       state: restarted
+    when: containerd_configuration.changed
 
 
   - name: Remove swapfile from /etc/fstab
@@ -234,13 +236,18 @@
     tags: bootstrap-cluster
     shell: kubeadm init --config /root/kubeadm-config.yaml
     when: not kubeadm_initialized_status.stat.exists
-  - name: Apply CNI calico
+  - name: Writing CNI manifest
+    tags: bootstrap-cluster
+    file:
+      src: ../manifests/cni/calico-v3.25.yaml
+      dest: /root/calico.yaml
+  - name: Apply CNI
     tags: bootstrap-cluster
     shell: |
       mkdir -p /root/.kube
       cp -i /etc/kubernetes/admin.conf /root/.kube/config
       chown $(id -u):$(id -g) /root/.kube/config
-      kubectl apply -f ../manifests/cni/calico-v3.25.yaml
+      kubectl apply -f /root/calico.yaml
 
 
   - name: Generate join command for control-plane
@@ -388,3 +395,4 @@
       - /root/kube-proxy.yaml
       - /root/kubeadm-config.yaml
       - /root/kubeadm.yaml
+      - /root/calico.yaml
