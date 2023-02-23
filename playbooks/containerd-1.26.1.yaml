@@ -19,6 +19,7 @@
       autoremove: yes
       install_recommends: yes
       dpkg_options: 'force-confdef,force-confold'
+    environment: "{{ PROXY }}"
   - name: Install depedency
     tags: install-depedencies
     apt:
@@ -43,6 +44,7 @@
       - net-tools
       - dnsutils
       - traceroute
+    environment: "{{ PROXY }}"
 
 
 - hosts: masters,workers
@@ -87,17 +89,20 @@
     apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg
       state: present
+    environment: "{{ PROXY }}"
   - name: Add containerd apt repository
     tags: install-containerd
     apt_repository:
       repo: deb [arch={{ dpkg_arch }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
       state: present
       filename: docker
+    environment: "{{ PROXY }}"
   - name: Install containerd packages
     tags: install-containerd
     apt:
       name: containerd.io
       state: present
+    environment: "{{ PROXY }}"
   - name: Create Containerd directories
     tags: install-containerd
     file:
@@ -136,12 +141,14 @@
     apt_key:
       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
       state: present
+    environment: "{{ PROXY }}"
   - name: Add kubernetes apt repository
     tags: install-kubernetes
     apt_repository:
       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
       state: present
       filename: kubernetes.list
+    environment: "{{ PROXY }}"
   - name: Install kubernetes packages
     tags: install-kubernetes
     apt:
@@ -153,6 +160,7 @@
         - kubelet=1.26.1-00
         - kubeadm=1.26.1-00
         - kubectl=1.26.1-00
+    environment: "{{ PROXY }}"
   - name: Disable auto update of kubernetes packages
     tags: install-kubernetes
     dpkg_selections:
@@ -175,6 +183,7 @@
       name: haproxy
       update_cache: yes
       state: present
+    environment: "{{ PROXY }}"
   - name: Disable auto updates for loadbalancer packages
     tags: install-loadbalancer
     dpkg_selections:
@@ -212,7 +221,7 @@
       mkdir -p /root/.kube
       cp -i /etc/kubernetes/admin.conf /root/.kube/config
       chown $(id -u):$(id -g) /root/.kube/config
-      kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml
+      kubectl apply -f ../manifests/cni/calico-v3.25.yaml
 
 
   - name: Generate join command for control-plane
