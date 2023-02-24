@@ -253,18 +253,26 @@
 
 
   - name: Generate join command for control-plane
-    tags: generate-control-plane-token
+    tags: 
+    - generate-token
+    - generate-control-plane-token
     shell: echo "$(kubeadm token create --print-join-command) --control-plane --certificate-key $(kubeadm init phase upload-certs --upload-certs | grep -vw -e certificate -e Namespace)"
     register: join_command_controller
   - name: Copy join command for control-plane to local file
-    tags: generate-control-plane-token
+    tags: 
+    - generate-token
+    - generate-control-plane-token
     local_action: copy content="{{ join_command_controller.stdout_lines[0] }}" dest="./join-command-controller"
   - name: Generate join command for workers
-    tags: generate-worker-token
+    tags: 
+    - generate-token
+    - generate-worker-token
     command: kubeadm token create --print-join-command
     register: join_command_workers
   - name: Copy join command for workers to local file
-    tags: generate-worker-token
+    tags: 
+    - generate-token
+    - generate-worker-token
     local_action: copy content="{{ join_command_workers.stdout_lines[0] }}" dest="./join-command-workers"
 
 
