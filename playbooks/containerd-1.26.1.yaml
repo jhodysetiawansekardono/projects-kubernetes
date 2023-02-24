@@ -276,24 +276,7 @@
     local_action: copy content="{{ join_command_workers.stdout_lines[0] }}" dest="./join-command-workers"
 
 
-- hosts: master002
-  tasks:
-  - name: Copy the join command to control plane
-    tags: join-masters
-    copy:
-      mode: 0777
-      src: join-command-controller
-      dest: /tmp/join-command.sh
-  - name: Join the control plane node to cluster
-    tags: join-masters
-    command: sh /tmp/join-command.sh
-  - name: Copy kubeconfig
-    tags: join-masters
-    shell: |
-      mkdir -p /root/.kube
-      cp -i /etc/kubernetes/admin.conf /root/.kube/config
-      chown $(id -u):$(id -g) /root/.kube/config
-- hosts: master003
+- hosts: master002,master003
   tasks:
   - name: Copy the join command to control plane
     tags: join-masters
@@ -313,6 +296,8 @@
 
 
 - hosts: workers
+  vars_files:
+  - variables.yaml
   tasks:
   - name: Copy the join command to workers
     tags: join-workers
@@ -346,10 +331,6 @@
       minutes: 10
 
 
-- hosts: workers
-  vars_files:
-  - variables.yaml
-  tasks:
   - name: Writing loadbalancer static POD manifest
     tags: configure-apiserver
     copy:
@@ -366,8 +347,15 @@
     template:
       src: ../templates/nginx.conf.j2
       dest: /etc/nginx/nginx.conf
+
 - hosts: masters,workers
   tasks:
+  - name: Writing kubelet config for masters
+    tags: configure-apiserver
+    template:
+      src: ../manifests/kubelet/kubelet-config.yaml.j2
+      dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+      mode: 0644
   - name: Configure Kubeadm to use localhost loadbalancer
     tags: configure-apiserver
     shell: |
@@ -377,6 +365,7 @@
     tags: configure-apiserver
     systemd:
       name: kubelet
+      daemon_reload: true
       state: restarted
     when: configuring_apiserver.changed
 - hosts: master001
@@ -411,19 +400,3 @@
     tags: configure-apiserver
     shell: |
       crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
-
-- hosts: master001
-  tasks:
-  - name: Writing kubelet config for masters
-    tags: testing
-    template:
-      src: ../manifests/kubelet/kubelet-config.yaml.j2
-      dest: /root/10-kubeadm.conf
-
-- hosts: worker001
-  tasks:
-  - name: Writing kubelet config for workers
-    tags: testing
-    template:
-      src: ../manifests/kubelet/kubelet-config.yaml.j2
-      dest: /root/10-kubeadm.conf
