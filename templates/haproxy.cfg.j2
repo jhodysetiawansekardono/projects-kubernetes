@@ -39,3 +39,19 @@ backend kube_api_backend
   {% for host in groups['masters'] -%}
   server {{ hostvars[host].ansible_hostname }} {{ hostvars[host].ansible_host }}:{{ K8S_API_PORT }} check check-ssl verify none
   {% endfor -%}
+
+frontend kube_dashboard_frontend
+  bind 127.0.0.1:443
+  mode tcp
+  option tcplog
+  default_backend kube_dashboard_frontend
+
+backend kube_dashboard_frontend
+  mode tcp
+  balance leastconn
+  default-server inter 15s downinter 15s rise 2 fall 2 slowstart 60s maxconn 1000 maxqueue 256 weight 100
+  option httpchk GET /health
+  http-check expect status 200
+  {% for host in groups['masters'] -%}
+  server {{ hostvars[host].ansible_hostname }} {{ hostvars[host].ansible_host }}:30000 check check-ssl verify none
+  {% endfor -%}

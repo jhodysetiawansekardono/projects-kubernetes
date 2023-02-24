@@ -253,26 +253,18 @@
 
 
   - name: Generate join command for control-plane
-    tags: 
-    - generate-token
-    - generate-control-plane-token
+    tags: generate-token
     shell: echo "$(kubeadm token create --print-join-command) --control-plane --certificate-key $(kubeadm init phase upload-certs --upload-certs | grep -vw -e certificate -e Namespace)"
     register: join_command_controller
   - name: Copy join command for control-plane to local file
-    tags: 
-    - generate-token
-    - generate-control-plane-token
+    tags: generate-token
     local_action: copy content="{{ join_command_controller.stdout_lines[0] }}" dest="./join-command-controller"
   - name: Generate join command for workers
-    tags: 
-    - generate-token
-    - generate-worker-token
+    tags: generate-token
     command: kubeadm token create --print-join-command
     register: join_command_workers
   - name: Copy join command for workers to local file
-    tags: 
-    - generate-token
-    - generate-worker-token
+    tags: generate-token
     local_action: copy content="{{ join_command_workers.stdout_lines[0] }}" dest="./join-command-workers"
 
 
@@ -400,3 +392,16 @@
     tags: configure-apiserver
     shell: |
       crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
+  - name: Waiting API ready
+    tags: configure-apiserver
+    pause:
+      echo: yes
+      minutes: 1
+
+- hosts: master001
+  tasks:
+  - name: Apply Kubernetes dashboard
+    tags: addons-dashboard
+    pause:
+      prompt: "Do you want to create kubernetes dashboard? (yes/no)"
+    register: create_kubernetes_dashboard
