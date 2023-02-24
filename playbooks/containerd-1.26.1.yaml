@@ -412,7 +412,7 @@
     shell: |
       crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
 
-- hosts: masters
+- hosts: master001
   tasks:
   - name: Writing kubelet config for masters
     tags: testing
@@ -420,7 +420,7 @@
       src: ../manifests/kubelet/kubelet-config.yaml.j2
       dest: /root/10-kubeadm.conf
 
-- hosts: workers
+- hosts: worker001
   tasks:
   - name: Writing kubelet config for workers
     tags: testing
