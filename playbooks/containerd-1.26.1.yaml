@@ -411,3 +411,19 @@
     tags: configure-apiserver
     shell: |
       crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
+
+- hosts: masters
+  tasks:
+  - name: Writing kubelet config for masters
+    tags: testing
+    template:
+      src: ../manifests/kubelet/kubelet-config.yaml.j2
+      dest: /root/10-kubeadm.conf
+
+- hosts: workers
+  tasks:
+  - name: Writing kubelet config for workers
+    tags: testing
+    template:
+      src: ../manifests/kubelet/kubelet-config.yaml.j2
+      dest: /root/10-kubeadm.conf
