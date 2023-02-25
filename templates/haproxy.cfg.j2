@@ -40,6 +40,7 @@ backend kube_api_backend
   server {{ hostvars[host].ansible_hostname }} {{ hostvars[host].ansible_host }}:{{ K8S_API_PORT }} check check-ssl verify none
   {% endfor -%}
 
+
 frontend kube_dashboard_frontend
   bind 127.0.0.1:443
   mode tcp
