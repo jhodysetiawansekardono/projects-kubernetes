@@ -5,3 +5,4 @@ PROXY:
   http_proxy: http://IP_PROXY:PORT
   https_proxy: http://IP_PROXY:PORT
   no_proxy: localhost,127.0.0.1,10.96.0.1,10.96.0.10
+KUBECONFIG: /etc/kubernetes/admin.conf
