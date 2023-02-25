@@ -271,6 +271,7 @@
     tags: bootstrap-cluster
     shell: |
       kubectl apply -f /root/calico.yaml
+    environment: "{{ KUBECONFIG }}"
 
 
   - name: Generate join command for control-plane
