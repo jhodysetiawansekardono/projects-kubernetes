@@ -25,7 +25,7 @@ frontend healthz
   monitor-uri /healthz
 
 frontend kube_api_frontend
-  bind 127.0.0.1:{{ K8S_API_PORT }}
+  bind *:{{ K8S_API_PORT }}
   mode tcp
   option tcplog
   default_backend kube_api_backend
@@ -41,7 +41,7 @@ backend kube_api_backend
 {% endfor %}
 
 frontend kube_dashboard_frontend
-  bind 127.0.0.1:443
+  bind *:443
   mode tcp
   option tcplog
   default_backend kube_dashboard_frontend
