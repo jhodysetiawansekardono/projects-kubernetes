@@ -417,7 +417,7 @@
       kubeadm init phase upload-config kubeadm --config kubeadm.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl -n kube-system get cm kube-proxy -o yaml > /root/kube-proxy.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl -n kube-public get cm cluster-info -o yaml > /root/cluster-info.yaml
-      sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /root/kube-proxy.yaml /root/cluster-info.yaml /root/.kube/config /etc/kubernetes/admin.conf
+      sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /root/kube-proxy.yaml /root/cluster-info.yaml /home/ubuntu/.kube/config /etc/kubernetes/admin.conf
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl apply --force -f /root/cluster-info.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl apply --force -f /root/kube-proxy.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl rollout restart ds kube-proxy -n kube-system
