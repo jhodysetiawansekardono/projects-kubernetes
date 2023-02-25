@@ -244,7 +244,8 @@
     register: kubeadm_initialized_status
   - name: Initialize the first control plane
     tags: bootstrap-cluster
-    shell: kubeadm init --config /root/kubeadm-config.yaml
+    shell: |
+      kubeadm init --config /root/kubeadm-config.yaml
     when: not kubeadm_initialized_status.stat.exists
   - name: Writing CNI manifest
     tags: bootstrap-cluster
