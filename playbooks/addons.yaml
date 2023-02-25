@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: master001
   become: yes
   become_user: root
   vars_files:
