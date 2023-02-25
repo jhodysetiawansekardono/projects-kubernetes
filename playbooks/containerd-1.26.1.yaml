@@ -417,7 +417,7 @@
       kubeadm init phase upload-config kubeadm --config kubeadm.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl -n kube-system get cm kube-proxy -o yaml > /root/kube-proxy.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl -n kube-public get cm cluster-info -o yaml > /root/cluster-info.yaml
-      sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /root/kube-proxy.yaml /root/cluster-info.yaml /home/ubuntu/.kube/config /etc/kubernetes/admin.conf
+      sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /root/kube-proxy.yaml /root/cluster-info.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl apply --force -f /root/cluster-info.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl apply --force -f /root/kube-proxy.yaml
       KUBECONFIG=/etc/kubernetes/admin.conf kubectl rollout restart ds kube-proxy -n kube-system
@@ -440,6 +440,7 @@
   - name: Restarting API server
     tags: configure-apiserver
     shell: |
+      sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /home/ubuntu/.kube/config /etc/kubernetes/admin.conf
       crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
   - name: Waiting API ready
     tags: configure-apiserver
