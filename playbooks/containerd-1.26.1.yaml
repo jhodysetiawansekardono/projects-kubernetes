@@ -269,10 +269,9 @@
       remote_src: true
   - name: Apply CNI
     tags: bootstrap-cluster
+    become_user: ubuntu
     shell: |
-      kubectl apply -f /root/calico.yaml --context=kubernetes-admin@cluster
-    environment:
-      KUBECONFIG: /etc/kubernetes/admin.conf
+      kubectl apply -f /root/calico.yaml
 
 
   - name: Generate join command for control-plane
