@@ -1,5 +1,7 @@
 ---
 - hosts: all
+  become: yes
+  become_user: root
   vars_files:
   - variables.yaml
   tasks:
@@ -50,6 +52,8 @@
 
 
 - hosts: masters,workers
+  become: yes
+  become_user: root
   vars_files:
   - variables.yaml
   tasks:
@@ -191,6 +195,8 @@
 
 
 - hosts: loadbalancers
+  become: yes
+  become_user: root
   vars_files:
   - variables.yaml
   tasks:
@@ -221,6 +227,8 @@
 
 
 - hosts: master001
+  become: yes
+  become_user: root
   vars_files:
   - variables.yaml
   tasks:
@@ -243,12 +251,24 @@
     copy:
       src: ../manifests/cni/calico-v3.25.yaml
       dest: /root/calico.yaml
+  - name: Create kubeconfig directory
+    tags: bootstrap-cluster
+    file:
+      path: /home/ubuntu/.kube
+      state: directory
+      group: ubuntu
+      owner: ubuntu
+  - name: Writing kubeconfig manifest
+    tags: bootstrap-cluster
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /home/ubuntu/.kube/config
+      group: ubuntu
+      owner: ubuntu
+      remote_src: true
   - name: Apply CNI
     tags: bootstrap-cluster
     shell: |
-      mkdir -p /root/.kube
-      cp -i /etc/kubernetes/admin.conf /root/.kube/config
-      chown $(id -u):$(id -g) /root/.kube/config
       kubectl apply -f /root/calico.yaml
 
 
@@ -279,12 +299,21 @@
   - name: Join the control plane node to cluster
     tags: join-masters
     command: sh /tmp/join-command.sh
-  - name: Copy kubeconfig
+  - name: Create kubeconfig directory
     tags: join-masters
-    shell: |
-      mkdir -p /root/.kube
-      cp -i /etc/kubernetes/admin.conf /root/.kube/config
-      chown $(id -u):$(id -g) /root/.kube/config
+    file:
+      path: /home/ubuntu/.kube
+      state: directory
+      group: ubuntu
+      owner: ubuntu
+  - name: Writing kubeconfig manifest
+    tags: join-masters
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /home/ubuntu/.kube/config
+      group: ubuntu
+      owner: ubuntu
+      remote_src: true
 
 
 - hosts: workers
