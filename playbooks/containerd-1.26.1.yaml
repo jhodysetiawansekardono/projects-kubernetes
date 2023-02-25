@@ -270,7 +270,7 @@
   - name: Apply CNI
     tags: bootstrap-cluster
     shell: |
-      kubectl apply -f /root/calico.yaml
+      kubectl apply -f /root/calico.yaml --context=kubernetes-admin@cluster
     environment: "{{ KUBECONFIG }}"
 
 
