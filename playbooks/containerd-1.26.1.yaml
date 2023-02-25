@@ -271,7 +271,8 @@
     tags: bootstrap-cluster
     shell: |
       kubectl apply -f /root/calico.yaml --context=kubernetes-admin@cluster
-    environment: "{{ KUBECONFIG }}"
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
 
 
   - name: Generate join command for control-plane
