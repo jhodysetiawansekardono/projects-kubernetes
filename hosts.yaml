@@ -2,40 +2,40 @@ masters:
   hosts:
     master001:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
     master002:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
     master003:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
 
 workers:
   hosts:
     worker001:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
     worker002:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
     worker003:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
     worker004:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
     worker005:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
 
 storages:
   hosts:
     storage-nfs:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu
 
 loadbalancers:
   hosts:
     loadbalancer001:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: root
+      ansible_user: ubuntu

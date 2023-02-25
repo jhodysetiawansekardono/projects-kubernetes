@@ -397,11 +397,3 @@
     pause:
       echo: yes
       minutes: 1
-
-- hosts: master001
-  tasks:
-  - name: Apply Kubernetes dashboard
-    tags: addons-dashboard
-    pause:
-      prompt: "Do you want to create kubernetes dashboard? (yes/no)"
-    register: create_kubernetes_dashboard
