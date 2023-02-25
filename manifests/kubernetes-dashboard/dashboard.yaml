@@ -44,7 +44,6 @@ spec:
       nodePort: 30000
   selector:
     k8s-app: kubernetes-dashboard
-  externalTrafficPolicy: Local
 
 ---
 
@@ -170,7 +169,7 @@ subjects:
 
 ---
 
-kind: DaemonSet
+kind: Deployment
 apiVersion: apps/v1
 metadata:
   labels:
@@ -178,6 +177,7 @@ metadata:
   name: kubernetes-dashboard
   namespace: kubernetes-dashboard
 spec:
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
