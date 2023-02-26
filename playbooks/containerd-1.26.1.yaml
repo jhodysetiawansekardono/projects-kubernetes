@@ -434,6 +434,7 @@
       - /root/kubeadm.yaml
       - /root/calico.yaml
 - hosts: masters
+  serial: 1
   become: yes
   become_user: root
   tasks:
@@ -442,10 +443,27 @@
     - configure-apiserver
     - restart-api
     shell: |
+      mkdir -p /root/backups/manifests/
+      mv /etc/kubernetes/manifests/* /root/backups/manifests/
       sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /home/ubuntu/.kube/config /etc/kubernetes/admin.conf
-      crictl --runtime-endpoint unix:///run/containerd/containerd.sock pods --namespace kube-system --name 'kube-apiserver-*' -q | /usr/bin/xargs crictl --runtime-endpoint unix:///run/containerd/containerd.sock rmp -f
-  - name: Waiting API ready
-    tags: configure-apiserver
+  - name: Waiting API shutdown
+    tags: 
+    - configure-apiserver
+    - restart-api
     pause:
       echo: yes
-      minutes: 1
+      seconds: 30
+  - name: Start API server
+    tags:
+    - configure-apiserver
+    - restart-api
+    shell: |
+      mv /root/backups/manifests/* /etc/kubernetes/manifests/
+      rm -rf /root/backups/manifests/
+  - name: Waiting API Started
+    tags: 
+    - configure-apiserver
+    - restart-api
+    pause:
+      echo: yes
+      seconds: 30
