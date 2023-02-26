@@ -444,7 +444,7 @@
     - restart-api
     shell: |
       mkdir -p /root/backups/manifests/
-      mv /etc/kubernetes/manifests/* /root/backups/manifests/
+      mv /etc/kubernetes/manifests/kube-apiserver.yaml /root/backups/manifests/
       sed -i 's/server: https:\/\/[0-9\.]\{1,\}:6443/server: https:\/\/localhost:6443/' /home/ubuntu/.kube/config /etc/kubernetes/admin.conf
   - name: Waiting API shutdown
     tags: 
@@ -458,7 +458,7 @@
     - configure-apiserver
     - restart-api
     shell: |
-      mv /root/backups/manifests/* /etc/kubernetes/manifests/
+      mv /root/backups/manifests/kube-apiserver.yaml /etc/kubernetes/manifests/kube-apiserver.yaml
       rm -rf /root/backups/manifests/
   - name: Waiting API Started
     tags: 
