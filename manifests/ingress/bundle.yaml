@@ -335,6 +335,9 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "10254"
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -358,6 +361,10 @@ spec:
     port: 443
     protocol: TCP
     targetPort: https
+  - appProtocol: http
+    name: prometheus
+    port: 10254
+    targetPort: prometheus
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -391,6 +398,9 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "10254"
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -462,6 +472,9 @@ spec:
           protocol: TCP
         - containerPort: 8443
           name: webhook
+          protocol: TCP
+        - containerPort: 10254
+          name: prometheus
           protocol: TCP
         readinessProbe:
           failureThreshold: 3

@@ -55,3 +55,11 @@ backend kube_dashboard_frontend
 {% for host in groups['masters'] %}
   server {{ hostvars[host].ansible_hostname }} {{ hostvars[host].ansible_host }}:30000 check check-ssl verify none
 {% endfor %}
+
+frontend stats
+  bind *:8404
+  option http-use-htx
+  http-request use-service prometheus-exporter if { path /metrics }
+  stats enable
+  stats uri /stats
+  stats refresh 10s
