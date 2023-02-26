@@ -223,6 +223,17 @@
       state: present
       update_cache: yes
     environment: "{{ PROXY }}"
+  - name: Disable auto update of kubernetes packages
+    tags: install-kubernetes
+    dpkg_selections:
+      name: "{{ item }}"
+      selection: hold
+    loop:
+      - kubelet
+      - kubeadm
+      - kubectl
+      - containerd.io
+      - helm
 
 
 - hosts: loadbalancers
