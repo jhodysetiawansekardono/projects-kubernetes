@@ -291,7 +291,6 @@
       state: directory
       group: ubuntu
       owner: ubuntu
-      mode: 600
   - name: Writing kubeconfig manifest
     tags: bootstrap-cluster
     copy:
@@ -299,6 +298,7 @@
       dest: /home/ubuntu/.kube/config
       group: ubuntu
       owner: ubuntu
+      mode: 600
       remote_src: true
   - name: Apply CNI
     tags: bootstrap-cluster
@@ -342,7 +342,6 @@
       state: directory
       group: ubuntu
       owner: ubuntu
-      mode: 600
   - name: Writing kubeconfig manifest
     tags: join-masters
     copy:
@@ -350,6 +349,7 @@
       dest: /home/ubuntu/.kube/config
       group: ubuntu
       owner: ubuntu
+      mode: 600
       remote_src: true
 
 
