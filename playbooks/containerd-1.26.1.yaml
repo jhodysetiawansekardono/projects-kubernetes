@@ -182,16 +182,6 @@
         - kubeadm=1.26.1-00
         - kubectl=1.26.1-00
     environment: "{{ PROXY }}"
-  - name: Disable auto update of kubernetes packages
-    tags: install-kubernetes
-    dpkg_selections:
-      name: "{{ item }}"
-      selection: hold
-    loop:
-      - kubelet
-      - kubeadm
-      - kubectl
-      - containerd.io
 
 - hosts: masters
   become: yes
