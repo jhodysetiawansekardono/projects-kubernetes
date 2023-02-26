@@ -291,6 +291,7 @@
       state: directory
       group: ubuntu
       owner: ubuntu
+      mode: 600
   - name: Writing kubeconfig manifest
     tags: bootstrap-cluster
     copy:
@@ -341,6 +342,7 @@
       state: directory
       group: ubuntu
       owner: ubuntu
+      mode: 600
   - name: Writing kubeconfig manifest
     tags: join-masters
     copy:
