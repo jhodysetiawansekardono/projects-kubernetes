@@ -199,6 +199,10 @@
   vars_files:
   - variables.yaml
   tasks:
+  - name: Set DPKG architecture
+    tags: install-kubernetes
+    set_fact:
+      dpkg_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
   - name: Add Helm apt signing key
     tags: install-kubernetes
     apt_key:
