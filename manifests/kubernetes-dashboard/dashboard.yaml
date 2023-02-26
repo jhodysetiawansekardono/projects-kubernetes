@@ -231,7 +231,6 @@ spec:
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
         node-role.kubernetes.io/control-plane: ""
-      # Comment the following tolerations Dashboard must be deployed on master
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           effect: NoSchedule
@@ -299,8 +298,7 @@ spec:
             runAsGroup: 2001
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
-        "kubernetes.io/os": linux
-      # Comment the following tolerations if Dashboard must not be deployed on master
+        node-role.kubernetes.io/control-plane: ""
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
