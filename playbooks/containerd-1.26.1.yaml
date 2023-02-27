@@ -16,6 +16,11 @@
       mode: 0644
   - name: Disable auto update of Snapd packages
     tags: install-depedencies
+    shell: |
+      killall -9 /usr/bin/dpkg
+      rm -rf /var/cache/debconf/*
+  - name: Disable auto update of Snapd packages
+    tags: install-depedencies
     apt:
       name: snapd
       state: absent
