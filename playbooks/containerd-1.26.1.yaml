@@ -174,7 +174,7 @@
   - name: Add kubernetes apt signing key
     tags: install-kubernetes
     apt_key:
-      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      url: https://github.com/jhodysetiawansekardono/projects-kubernetes/raw/main/apt-key/kubernetes.gpg
       state: present
     environment: "{{ PROXY }}"
   - name: Add kubernetes apt repository
