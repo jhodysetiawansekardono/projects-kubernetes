@@ -29,6 +29,11 @@
       rm -rf /var/cache/debconf/*
   - name: Uninstall Snapd packages
     tags: install-depedencies
+    dpkg_selections:
+      name: snapd
+      selection: install
+  - name: Uninstall Snapd packages
+    tags: install-depedencies
     apt:
       name: snapd
       state: absent
