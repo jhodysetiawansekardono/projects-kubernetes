@@ -27,7 +27,7 @@
     shell: |
       killall -9 /usr/bin/dpkg
       rm -rf /var/cache/debconf/*
-  - name: Uninstall Snapd packages
+  - name: Unhold Snapd packages
     tags: install-depedencies
     dpkg_selections:
       name: snapd
