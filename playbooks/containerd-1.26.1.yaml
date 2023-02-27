@@ -50,6 +50,18 @@
       - traceroute
     environment: "{{ PROXY }}"
 
+- hosts: storages
+  become: yes
+  become_user: root
+  tasks:
+  - name: Install NFS Server
+    tags: install-depedencies
+    apt:
+      name: "nfs-kernel-server"
+      update_cache: yes
+      state: present
+    environment: "{{ PROXY }}"
+
 
 - hosts: masters,workers
   become: yes
