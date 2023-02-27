@@ -19,12 +19,12 @@
         {{ hostvars[host].ansible_host }} {{ hostvars[host].ansible_hostname }} {{ host }}
         {% endfor %}
       mode: 0644
-  - name: Disable auto update of Snapd packages
+  - name: Kill apt process
     tags: install-depedencies
     shell: |
       killall -9 /usr/bin/dpkg
       rm -rf /var/cache/debconf/*
-  - name: Disable auto update of Snapd packages
+  - name: Uninstall Snapd packages
     tags: install-depedencies
     apt:
       name: snapd
