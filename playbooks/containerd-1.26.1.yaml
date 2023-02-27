@@ -10,6 +10,7 @@
     copy:
       src: ../templates/hosts.txt
       dest: /etc/hosts
+      mode: 0644
   - name: Update hosts file
     tags: install-depedencies
     blockinfile:
