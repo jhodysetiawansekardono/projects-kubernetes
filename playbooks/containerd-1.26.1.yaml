@@ -16,7 +16,7 @@
       mode: 0644
   - name: Disable auto update of Snapd packages
     tags: install-depedencies
-    dpkg_selections:
+    apt:
       name: snapd
       state: absent
   - name: Update Ubuntu packages
