@@ -5,7 +5,7 @@
   vars_files:
   - variables.yaml
   tasks:
-  - name: Update hosts file
+  - name: Replace hosts file
     tags: install-depedencies
     copy:
       src: ../templates/hosts.txt
@@ -19,8 +19,10 @@
         {{ hostvars[host].ansible_host }} {{ hostvars[host].ansible_hostname }} {{ host }}
         {% endfor %}
       mode: 0644
-  - name: Kill apt process
-    tags: install-depedencies
+  - name: Kill APT process if any
+    tags: 
+    - install-depedencies
+    - kill-dpkg-process
     shell: |
       killall -9 /usr/bin/dpkg
       rm -rf /var/cache/debconf/*
