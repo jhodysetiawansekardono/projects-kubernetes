@@ -53,6 +53,8 @@
 - hosts: storages
   become: yes
   become_user: root
+  vars_files:
+  - variables.yaml
   tasks:
   - name: Install NFS Server
     tags: install-depedencies
