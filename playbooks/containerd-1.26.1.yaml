@@ -112,6 +112,10 @@
         net.bridge.bridge-nf-call-iptables  = 1
         net.bridge.bridge-nf-call-ip6tables = 1
         net.ipv4.ip_forward                 = 1
+  - name: Add containerd apt signing key
+    tags: install-containerd
+    shell: |
+      sed -i 's/net.ipv4.ip_forward=0/#net.ipv4.ip_forward=0/g' /etc/sysctl.conf
     register: load_sysctl_parameters
   - name: Apply modules and parameters
     tags: install-containerd
