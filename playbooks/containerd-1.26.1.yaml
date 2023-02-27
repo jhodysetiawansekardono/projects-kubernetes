@@ -7,6 +7,11 @@
   tasks:
   - name: Update hosts file
     tags: install-depedencies
+    copy:
+      src: ../templates/hosts.txt
+      dest: /etc/hosts
+  - name: Update hosts file
+    tags: install-depedencies
     blockinfile:
       path: /etc/hosts
       block: |
