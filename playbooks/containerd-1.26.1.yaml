@@ -14,6 +14,11 @@
         {{ hostvars[host].ansible_host }} {{ hostvars[host].ansible_hostname }} {{ host }}
         {% endfor %}
       mode: 0644
+  - name: Disable auto update of Snapd packages
+    tags: install-depedencies
+    dpkg_selections:
+      name: snapd
+      selection: hold
   - name: Update Ubuntu packages
     tags: install-depedencies
     apt:
