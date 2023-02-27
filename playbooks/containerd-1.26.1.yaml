@@ -18,7 +18,7 @@
     tags: install-depedencies
     dpkg_selections:
       name: snapd
-      selection: hold
+      state: absent
   - name: Update Ubuntu packages
     tags: install-depedencies
     apt:
@@ -26,7 +26,6 @@
       upgrade: dist
       force_apt_get: yes
       autoremove: yes
-      install_recommends: true
       dpkg_options: 'force-confdef,force-confold'
     environment: "{{ PROXY }}"
   - name: Install depedency
