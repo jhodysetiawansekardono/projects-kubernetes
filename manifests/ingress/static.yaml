@@ -206,12 +206,12 @@ spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
-        node-role.kubernetes.io/ingress: ''
+        node.kubernetes.io/ingress-controller: "true"
       tolerations:
         - effect: NoSchedule
-          key: node-role.kubernetes.io/ingress
+          key: node.kubernetes.io/ingress-controller
           operator: Equal
-          value: ''
+          value: "true"
 
       priorityClassName: k8s-cluster-critical
       containers:
