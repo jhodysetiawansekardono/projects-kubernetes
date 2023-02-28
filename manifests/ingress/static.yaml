@@ -209,7 +209,7 @@ spec:
         node.kubernetes.io/ingress-controller: "true"
       containers:
         - name: ingress-nginx-controller
-          image: registry.k8s.io/ingress-nginx/controller:v1.5.1
+          image: registry.k8s.io/ingress-nginx/controller:v1.6.4
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
