@@ -439,24 +439,26 @@
 - hosts: masters,workers
   become: yes
   become_user: root
-  tags: fixing-apiserver
   tasks:
   - name: Configure kubelet
+    tags: fix-apiserver
     shell: |
       sed -i 's/server: https:\/\/localhost:6443/server: https:\/\/172.19.40.9:6443/g' /etc/kubernetes/kubelet.conf
     register: fixing_apiserver.changed
   - name: Apply Kubeadm changes
+    tags: fix-apiserver
     systemd:
       name: kubelet
       daemon_reload: true
       state: restarted
-  - name: Uninstall persistent resolvconf 
-    tags: install-depedencies
+  - name: Uninstall persistent resolvconf
+    tags: fix-apiserver
     apt:
       name: resolvconf
       state: absent
     when: fixing_apiserver.changed
   - name: Waiting
+    tags: fix-apiserver
     pause:
       echo: yes
       seconds: 30
@@ -469,22 +471,23 @@
   - variables.yaml
   tasks:
   - name: Writing loadbalancer static POD manifest
-    tags: configure-apiserver
+    tags: loadbalancer-apiserver
     copy:
       src: ../manifests/loadbalancer/nginx.yaml
       dest: /etc/kubernetes/manifests
       mode: 0600
   - name: Create loadbalancer directories
-    tags: configure-apiserver
+    tags: loadbalancer-apiserver
     file:
       path: /etc/nginx
       state: directory
   - name: Writing loadbalancer configuration
-    tags: configure-apiserver
+    tags: loadbalancer-apiserver
     template:
       src: ../templates/nginx.conf.j2
       dest: /etc/nginx/nginx.conf
   - name: Waiting Loadbalancer Running
+    tags: loadbalancer-apiserver
     pause:
       echo: yes
       seconds: 60
@@ -583,4 +586,12 @@
   - name: Configure Node Local DNS as Default
     tags: configure-nodelocaldns
     shell:
-      
+      sed -i 's/10.96.0.10/169.254.25.10/g' /var/lib/kubelet/config.yaml
+    register: nodelocal_dns
+  - name: Apply changes
+    tags: configure-nodelocaldns
+    systemd:
+      name: kubelet
+      daemon_reload: true
+      state: restarted
+    when: nodelocal_dns.changed
