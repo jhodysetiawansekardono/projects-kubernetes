@@ -23,11 +23,11 @@ spec:
     livenessProbe:
       httpGet:
         path: /healthz
-        port: 8081
+        port: 8181
     readinessProbe:
       httpGet:
         path: /healthz
-        port: 8081
+        port: 8181
     volumeMounts:
     - mountPath: /etc/nginx
       name: etc-nginx

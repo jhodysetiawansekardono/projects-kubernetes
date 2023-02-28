@@ -436,6 +436,27 @@
       minutes: 10
 
 
+- hosts: masters,workers
+  become: yes
+  become_user: root
+  tags: fixing-apiserver
+  tasks:
+  - name: Configure kubelet
+    shell: |
+      sed -i 's/server: https:\/\/localhost:6443/server: https:\/\/172.19.40.9:6443/g' /etc/kubernetes/kubelet.conf
+    when: fixing_apiserver.changed
+  - name: Apply Kubeadm changes
+    systemd:
+      name: kubelet
+      daemon_reload: true
+      state: restarted
+    when: fixing_apiserver.changed
+  - name: Waiting
+    pause:
+      echo: yes
+      seconds: 30
+
+
 - hosts: workers
   become: yes
   become_user: root
@@ -458,6 +479,10 @@
     template:
       src: ../templates/nginx.conf.j2
       dest: /etc/nginx/nginx.conf
+  - name: Waiting Loadbalancer Running
+    pause:
+      echo: yes
+      seconds: 60
 
 - hosts: masters,workers
   become: yes
@@ -469,6 +494,7 @@
       src: ../manifests/kubelet/kubelet-config.yaml.j2
       dest: /var/lib/kubelet/config.yaml
       mode: 0644
+    register: configure_kubelet
   - name: Configure Kubeadm to use localhost loadbalancer
     tags: configure-apiserver
     shell: |
@@ -480,7 +506,7 @@
       name: kubelet
       daemon_reload: true
       state: restarted
-    when: configuring_apiserver.changed
+    when: configuring_apiserver.changed or configure_kubelet.changed
 
 - hosts: master001
   become: yes
