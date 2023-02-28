@@ -455,6 +455,11 @@
     pause:
       echo: yes
       seconds: 30
+  - name: Uninstall persistent resolvconf 
+    tags: install-depedencies
+    apt:
+      name: resolvconf
+      state: absent
 
 
 - hosts: workers
