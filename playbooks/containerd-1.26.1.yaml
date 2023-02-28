@@ -575,3 +575,12 @@
     pause:
       echo: yes
       seconds: 30
+
+- hosts: masters,workers
+  become: yes
+  become_user: root
+  tasks:
+  - name: Configure Node Local DNS as Default
+    tags: configure-nodelocaldns
+    shell:
+      
