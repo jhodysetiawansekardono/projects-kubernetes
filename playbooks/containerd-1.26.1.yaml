@@ -444,7 +444,7 @@
     tags: fix-apiserver
     shell: |
       sed -i 's/server: https:\/\/localhost:6443/server: https:\/\/172.19.40.9:6443/g' /etc/kubernetes/kubelet.conf
-    register: fixing_apiserver.changed
+    register: fixing_apiserver
   - name: Apply Kubeadm changes
     tags: fix-apiserver
     systemd:
