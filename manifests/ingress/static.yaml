@@ -207,8 +207,6 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
         node.kubernetes.io/ingress-controller: "true"
-
-      priorityClassName: k8s-cluster-critical
       containers:
         - name: ingress-nginx-controller
           image: registry.k8s.io/ingress-nginx/controller:v1.5.1
