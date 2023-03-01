@@ -47,7 +47,12 @@ spec:
       regex: etcd_(debugging|disk|request|server).*
       sourceLabels:
       - __name__
+    path: /metrics
     port: https-metrics
+    relabelings:
+    - sourceLabels:
+      - __metrics_path__
+      targetLabel: metrics_path
     scheme: https
     tlsConfig:
       insecureSkipVerify: true
