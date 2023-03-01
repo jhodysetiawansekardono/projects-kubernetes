@@ -10,6 +10,17 @@ metadata:
   name: k8s
   namespace: monitoring
 spec:
+  retention: 30d
+  storage:
+    volumeClaimTemplate:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      spec:
+        accessModes: ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: nfs-client
   alerting:
     alertmanagers:
     - apiVersion: v2
