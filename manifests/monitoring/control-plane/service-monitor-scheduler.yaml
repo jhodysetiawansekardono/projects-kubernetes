@@ -13,7 +13,8 @@ spec:
     port: https-metrics
     scheme: https
     tlsConfig:
-      insecureSkipVerify: true
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      serverName: kubernetes
   jobLabel: app.kubernetes.io/name
   namespaceSelector:
     matchNames:
