@@ -20,25 +20,6 @@
         {{ hostvars[host].ansible_host }} {{ hostvars[host].ansible_hostname }} {{ host }}
         {% endfor %}
       mode: 0644
-  - name: Kill APT process if any
-    tags: 
-    - install-depedencies
-    - kill-dpkg-process
-    shell: |
-      killall -9 /usr/bin/dpkg
-      rm -rf /var/cache/debconf/*
-  - name: Unhold Snapd packages
-    tags: install-depedencies
-    dpkg_selections:
-      name: snapd
-      selection: install
-  - name: Uninstall Snapd packages
-    tags: install-depedencies
-    apt:
-      name: snapd
-      state: absent
-      update_cache: yes
-    environment: "{{ PROXY }}"
   - name: Update Ubuntu packages
     tags: install-depedencies
     apt:
@@ -112,11 +93,6 @@
         net.bridge.bridge-nf-call-iptables  = 1
         net.bridge.bridge-nf-call-ip6tables = 1
         net.ipv4.ip_forward                 = 1
-  - name: Add containerd apt signing key
-    tags: install-containerd
-    shell: |
-      sed -i 's/net.ipv4.ip_forward=0/#net.ipv4.ip_forward=0/g' /etc/sysctl.conf
-    register: load_sysctl_parameters
   - name: Apply modules and parameters
     tags: install-containerd
     shell: |
@@ -436,34 +412,6 @@
       minutes: 10
 
 
-- hosts: masters,workers
-  become: yes
-  become_user: root
-  tasks:
-  - name: Configure kubelet
-    tags: fix-apiserver
-    shell: |
-      sed -i 's/server: https:\/\/localhost:6443/server: https:\/\/172.19.40.9:6443/g' /etc/kubernetes/kubelet.conf
-    register: fixing_apiserver
-  - name: Apply Kubeadm changes
-    tags: fix-apiserver
-    systemd:
-      name: kubelet
-      daemon_reload: true
-      state: restarted
-  - name: Uninstall persistent resolvconf
-    tags: fix-apiserver
-    apt:
-      name: resolvconf
-      state: absent
-    when: fixing_apiserver.changed
-  - name: Waiting
-    tags: fix-apiserver
-    pause:
-      echo: yes
-      seconds: 30
-
-
 - hosts: workers
   become: yes
   become_user: root
@@ -578,20 +526,3 @@
     pause:
       echo: yes
       seconds: 30
-
-- hosts: masters,workers
-  become: yes
-  become_user: root
-  tasks:
-  - name: Configure Node Local DNS as Default
-    tags: configure-nodelocaldns
-    shell:
-      sed -i 's/10.96.0.10/169.254.25.10/g' /var/lib/kubelet/config.yaml
-    register: nodelocal_dns
-  - name: Apply changes
-    tags: configure-nodelocaldns
-    systemd:
-      name: kubelet
-      daemon_reload: true
-      state: restarted
-    when: nodelocal_dns.changed
