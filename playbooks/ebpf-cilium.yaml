@@ -55,6 +55,13 @@
       - dnsutils
       - traceroute
     environment: "{{ PROXY }}"
+  - name: Writing script for upgrade kernel
+    tags: bootstrap-cluster
+    get_url:
+      url: https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
+      dest: /root/ubuntu-mainline-kernel.sh
+      mode: '0755'
+    environment: "{{ PROXY }}"
 
 - hosts: storages
   become: yes
@@ -314,7 +321,6 @@
       owner: ubuntu
       mode: 0600
       remote_src: true
-    
 
 
   - name: Generate join command for control-plane
