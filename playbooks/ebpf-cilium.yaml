@@ -54,7 +54,13 @@
       - net-tools
       - dnsutils
       - traceroute
+      - tuned
     environment: "{{ PROXY }}"
+  - name: Tuned adm
+    tags: install-depedencies
+    shell: |
+      tuned-adm profile network-latency
+
 
 - hosts: storages
   become: yes
