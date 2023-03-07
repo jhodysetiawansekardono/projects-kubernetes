@@ -62,6 +62,7 @@
       url: https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
       dest: /root/ubuntu-mainline-kernel.sh
       mode: 0755
+    environment: "{{ PROXY }}"
 
 
 
