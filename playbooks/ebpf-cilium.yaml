@@ -56,10 +56,13 @@
       - traceroute
       - tuned
     environment: "{{ PROXY }}"
-  - name: Tuned adm
+  - name: Writing script for kernel upgrade
     tags: install-depedencies
-    shell: |
-      tuned-adm profile network-latency
+    get_url:
+      url: https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
+      dest: /root/ubuntu-mainline-kernel.sh
+      mode: 0755
+
 
 
 - hosts: storages
