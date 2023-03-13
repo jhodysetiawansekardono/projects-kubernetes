@@ -1,0 +1,44 @@
+---
+- hosts: all
+  tasks:
+  - name: Update hosts file
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        {% for host in groups['all'] %}
+        {{ hostvars[host].ansible_host }} {{ hostvars[host].ansible_hostname }}
+        {% endfor %}
+      mode: 0644
+  - name: Update Ubuntu packages
+    apt:
+      update_cache: yes
+      upgrade: dist
+      force_apt_get: yes
+      autoremove: yes
+      install_recommends: true
+      dpkg_options: 'force-confdef,force-confold'
+    environment: "{{ PROXY }}"
+  - name: Install depedency
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: present
+    vars:
+      packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - nfs-common
+      - glusterfs-client
+      - tree
+      - jq
+      - sysstat
+      - iperf
+      - arping
+      - ca-certificates
+      - net-tools
+      - dnsutils
+      - traceroute
+    environment: "{{ PROXY }}"
