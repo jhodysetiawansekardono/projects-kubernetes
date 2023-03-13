@@ -1,41 +1,39 @@
-masters:
+all:
   hosts:
-    master001:
+    node1:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-    master002:
+    node2:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-    master003:
+    node3:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-
-workers:
-  hosts:
-    worker001:
+    node4:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-    worker002:
+    node5:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-    worker003:
+    node6:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-    worker004:
+    node7:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-    worker005:
+    node8:
       ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-
-storages:
-  hosts:
-    storage-nfs:
-      ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
-
-loadbalancers:
-  hosts:
-    loadbalancer001:
-      ansible_host: REPLACE_WITH_IP
-      ansible_user: ubuntu
+  children:
+    control_plane:
+      hosts:
+        node1:
+        node2:
+        node3:
+    workers:
+      hosts:
+        node4:
+        node5:
+        node6:
+    external_loadbalancer:
+      hosts:
+        node7:
+    storages:
+      hosts:
+        node8:
+    k8s_cluster:
+      children:
+        control_plane:
+        workers:

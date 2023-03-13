@@ -1,7 +1,0 @@
-K8S_API_ENDPOINTS: REPLACE_WITH_IP
-K8S_API_PORT: 6443
-CLUSTER_NAME: TABANAN
-PROXY:
-  http_proxy: http://IP_PROXY:PORT
-  https_proxy: http://IP_PROXY:PORT
-  no_proxy: localhost,127.0.0.1,10.96.0.1,10.96.0.10,172.18.66.156
