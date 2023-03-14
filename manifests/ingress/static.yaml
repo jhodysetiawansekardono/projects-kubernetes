@@ -225,7 +225,6 @@ spec:
             - --ingress-class=nginx
             - --report-node-internal-ip-address
             - --default-server-port=8119
-            - --publish-status-address=10.79.0.199
           securityContext:
             capabilities:
                 drop:
