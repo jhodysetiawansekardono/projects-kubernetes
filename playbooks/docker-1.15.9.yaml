@@ -356,7 +356,7 @@
     tags: join-workers
     shell: |
       for hosts in $(kubectl get nodes -o=custom-columns=NAME:.metadata.name --no-headers | grep 'worker-0[1-4]'); do kubectl label nodes $hosts type=app; kubectl label nodes $hosts node-role.kubernetes.io/worker=; kubectl label nodes $hosts node.kubernetes.io/ingress-controller=true; done
-      for hosts in $(kubectl get nodes -o=custom-columns=NAME:.metadata.name --no-headers | grep worker-05); do kubectl label nodes $hosts type=ops-monit; kubectl label nodes $hosts node-role.kubernetes.io/monitoring=; kubectl taint node $hosts node-role.kubernetes.io/monitoring:NoSchedule; done
+      for hosts in $(kubectl get nodes -o=custom-columns=NAME:.metadata.name --no-headers | grep worker-05); do kubectl label nodes $hosts type=ops-monit; kubectl label nodes $hosts node-role.kubernetes.io/monitoring=; kubectl taint node $hosts node-role.kubernetes.io/monitoring=NoSchedule:NoSchedule; done
   - name: Waiting cluster ready
     tags: join-workers
     pause:
