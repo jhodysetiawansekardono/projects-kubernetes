@@ -105,13 +105,9 @@
   - name: Install docker packages
     tags: install-docker
     apt:
-      name: "{{ packages }}"
+      name: docker.io=20.10.7-0ubuntu5~20.04.2
       state: present
     environment: "{{ PROXY }}"
-    vars:
-      packages:
-      - docker.io=20.10.7-0ubuntu5~20.04.2
-      - containerd
   - name: Create docker directories
     tags: install-docker
     file:
@@ -232,7 +228,6 @@
       - kubelet
       - kubeadm
       - kubectl
-      - containerd.io
       - helm
 
 
