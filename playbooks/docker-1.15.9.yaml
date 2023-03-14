@@ -255,7 +255,7 @@
   - name: Writing CNI manifest
     tags: bootstrap-cluster
     copy:
-      src: ../manifests/cni/calico-v3.25.yaml
+      src: ../manifests/cni/calico-v3.14.yaml
       dest: /root/calico.yaml
   - name: Create kubeconfig directory
     tags: bootstrap-cluster
