@@ -50,7 +50,6 @@
       - sysstat
       - iperf
       - arping
-      - ca-certificates
       - net-tools
       - dnsutils
       - traceroute
