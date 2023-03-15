@@ -1,6 +1,7 @@
 ---
 - hosts: workers
   serial: 1
+  become: yes
   become_user: root
   tasks:
   - name: Removing workers node
@@ -13,6 +14,7 @@
       reboot_timeout: 300
 - hosts: masters
   serial: 1
+  become: yes
   become_user: root
   tasks:
   - name: Removing node
