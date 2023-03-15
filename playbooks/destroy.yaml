@@ -13,7 +13,7 @@
 - hosts: masters
   serial: 1
   tasks:
-  - name: Removing jh-k8s-master001 node
+  - name: Removing node
     shell: |
       kubeadm reset -f
       rm -rf /etc/cni /etc/kubernetes /var/lib/etcd /var/lib/kubelet /var/run/kubernetes ~/.kube/*
