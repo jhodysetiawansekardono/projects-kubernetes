@@ -1,0 +1,23 @@
+---
+- hosts: workers
+  serial: 1
+  tasks:
+  - name: Removing workers node
+    shell: |
+      kubeadm reset -f
+      rm -rf /etc/cni /etc/kubernetes /var/lib/etcd /var/lib/kubelet /var/run/kubernetes ~/.kube/*
+      iptables -F && iptables -X; iptables -t nat -F && iptables -t nat -X; iptables -t raw -F && iptables -t raw -X; iptables -t mangle -F && iptables -t mangle -X
+  - name: Rebooting workers
+    reboot:
+      reboot_timeout: 300
+- hosts: masters
+  serial: 1
+  tasks:
+  - name: Removing jh-k8s-master001 node
+    shell: |
+      kubeadm reset -f
+      rm -rf /etc/cni /etc/kubernetes /var/lib/etcd /var/lib/kubelet /var/run/kubernetes ~/.kube/*
+      iptables -F && iptables -X; iptables -t nat -F && iptables -t nat -X; iptables -t raw -F && iptables -t raw -X; iptables -t mangle -F && iptables -t mangle -X
+  - name: Rebooting masters
+    reboot:
+      reboot_timeout: 300
